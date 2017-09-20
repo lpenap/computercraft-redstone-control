@@ -1,0 +1,42 @@
+-- Client Configuration
+
+local CONFIG_FILE = "client.conf"
+
+-- Client Program
+os.loadAPI("api/ClientAPI")
+
+local client = ClientAPI.ClientClass:new()
+local result, code = client:loadConfig (CONFIG_FILE)
+
+if not result then
+	if code == 1 then
+		print ("Can't find cofiguration file.")
+		print ()
+		print ("A new configuration file was generated.")
+		print ("Configuration located at "..CONFIG_FILE)
+		print ("You may edit this file to change default settings.")
+		print ("Run the program again when done.")
+	elseif code == 2 then
+		print ("ERROR loading config file ".. CONFIG_FILE)
+		print ("Try fixing it and restart the program.")
+		print ()
+		print ("Tip: You can delete the config file and")
+		print ("     it will be created again!.")
+	else
+		print("Could not find the necessary config.")
+		print("The file exists, but the config could not be loaded.")
+		print("Try restarting the program again.")
+		print ()
+		print ("Tip: You can delete the config file and")
+		print ("     it will be created again!.")
+	end
+else
+	print ("Configuration loaded:")
+	print ("  Keep alive:     ".. client:getKeepAlive())
+	print ("  Name:           ".. client:getName())
+	print ("  Redstona state: ".. client:getRedstoneState())
+	print ("  Redstone side:  ".. client:getRedstoneSide())
+	print()
+	print ("starting...")
+	sleep(2)
+end

@@ -1,0 +1,5 @@
+-- Utility functions
+
+function interpolate(s, params)
+	return s:gsub('($%b{})', function(w) return params[w:sub(3, -2)] or w end)
+end
