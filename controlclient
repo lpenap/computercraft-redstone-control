@@ -1,42 +1,43 @@
--- Client Configuration
+os.loadAPI("api/ClientAPI")
+os.loadAPI("api/ClientHelperAPI")
+os.loadAPI("api/Util")
 
+-- Configuration file
 local CONFIG_FILE = "client.conf"
 
+-- If true, prints additional info on the client
+local ADDITIONAL_INFO = true
+
 -- Client Program
-os.loadAPI("api/ClientAPI")
+term.clear()
+ClientHelperAPI.printHeader()
 
 local client = ClientAPI.ClientClass:new()
-local result, code = client:loadConfig (CONFIG_FILE)
+local code = client:loadConfig (CONFIG_FILE)
 
-if not result then
-	if code == 1 then
-		print ("Can't find cofiguration file.")
-		print ()
-		print ("A new configuration file was generated.")
-		print ("Configuration located at "..CONFIG_FILE)
-		print ("You may edit this file to change default settings.")
-		print ("Run the program again when done.")
-	elseif code == 2 then
-		print ("ERROR loading config file ".. CONFIG_FILE)
-		print ("Try fixing it and restart the program.")
-		print ()
-		print ("Tip: You can delete the config file and")
-		print ("     it will be created again!.")
-	else
-		print("Could not find the necessary config.")
-		print("The file exists, but the config could not be loaded.")
-		print("Try restarting the program again.")
-		print ()
-		print ("Tip: You can delete the config file and")
-		print ("     it will be created again!.")
-	end
+if code ~= Util.CONFIG_OK then
+	Util.printConfigMessages (code, CONFIG_FILE)
 else
-	print ("Configuration loaded:")
-	print ("  Keep alive:     ".. client:getKeepAlive())
-	print ("  Name:           ".. client:getName())
-	print ("  Redstona state: ".. client:getRedstoneState())
-	print ("  Redstone side:  ".. client:getRedstoneSide())
-	print()
-	print ("starting...")
-	sleep(2)
+	print ("Configuration loaded.")
+	if ADDITIONAL_INFO then
+		ClientHelperAPI.printConfig(client)
+	end
+	print ("Looking up server. This can take some time.")
+	if not client:waitForHandshake() then
+		print ("Communications error (check modem and try again)")
+	else 
+		print ("Server found!, initiating client loop...")
+		ClientHelperAPI.printMenu()
+		local exit = false
+		while not exit do
+			local result, code = client:handleEvent()
+			if code == ClientAPI.CODE_EXIT then
+				exit = true
+			end
+			if ADDITIONAL_INFO then
+				print ("Code: "..code .. " , result: ".. Util.booleanToString(result))
+			end
+		end
+	end
 end
+print ("Exiting program.")

@@ -2,6 +2,11 @@
 
 os.loadAPI("api/Util")
 
+-- Global variables and constants
+CODE_EXIT = 99
+CODE_KEEP_ALIVE = 10
+CODE_RECEIVE_MSG = 50
+
 -- Local variables
 local CONFIG_TEMPLATE = [[--
 -- Remote Control Program by lpenap
@@ -14,6 +19,11 @@ local CONFIG_TEMPLATE = [[--
 
 
 -- Client Configuration:
+
+-- Secret for your server
+-- You will generate this when you run the
+-- server for the first time.
+SERVER_SECRET = "${serverSecret}"
 
 -- Interval for reporting to server program
 -- (in seconds)
@@ -35,7 +45,8 @@ ClientClass = {
 	keepAlive = 60,
 	name = "Generic Client",
 	redstoneState = 1,
-	redstoneSide = "front"
+	redstoneSide = "front",
+	serverSecret = "Change_Me"
 }
 
 function ClientClass:new (o)
@@ -65,50 +76,55 @@ function ClientClass:getRedstoneSide()
 	return self.redstoneSide
 end
 
+function ClientClass:getServerSecret()
+	return self.serverSecret
+end
+
 function ClientClass:saveConfig(configFile)
-	local fp = fs.open ("/"..configFile, "w")
 	local settings = {
 		keepAlive = self.keepAlive,
 		clientName = self.name,
 		redstoneState = self.redstoneState,
-		redstoneSide = self.redstoneSide
+		redstoneSide = self.redstoneSide,
+		serverSecret = self.serverSecret
 	}
-	fp.write (Util.interpolate(CONFIG_TEMPLATE, settings))
-	fp.close()
+	Util.saveConfig (configFile, CONFIG_TEMPLATE, settings)
 end
 
 function ClientClass:loadConfig(configFile)
-	local result = true
-	local errorCode = 0
-	if fs.exists (configFile) == false then
-		self:saveConfig (configFile)
-		errorCode = 1
-		result = false
-	else
-		os.unloadAPI (configFile)
-		if os.loadAPI (configFile) == false then
-			errorCode = 2
-			result = false
-		else
-			local config = nil
-			for k, v in pairs(_G) do
-				if k == configFile then
-					config = v
-					break
-				end
-			end
-			if config == nil then
-				errorCode = 3
-    			result = false
-    		else
-    			self.keepAlive = config.KEEP_ALIVE
-    			self.name = config.CLIENT_NAME
-    			self.redstoneState = config.REDSTONE_STATE
-    			self.redstoneSide = config.REDSTONE_SIDE
-    		end
-    	end
+	local code, config = Util.loadConfig (configFile)
+
+	if code == Util.CONFIG_NOT_FOUND then
+		self:saveConfig(configFile)
+
+	elseif code == Util.CONFIG_OK then
+		self.keepAlive = config.KEEP_ALIVE
+    	self.name = config.CLIENT_NAME
+    	self.redstoneState = config.REDSTONE_STATE
+    	self.redstoneSide = config.REDSTONE_SIDE
+    	self.serverSecret = config.SERVER_SECRET
     end
-    return result, errorCode
+    return code
+end
+
+-- Handshake protocol overview:
+-- 1:   Clients searchs for modem
+-- 1.1: Clients aborts if there is no modem found
+-- 2:   Client attempts a rednet lookup of the server
+-- 2.1: If no server is found, Client sleeps and tries again 2
+-- 3:   Client sends a HELLO message to the server with the initial state
+-- 4:   Clients waits for ACK from the server
+-- 5:   Clients returns true
+function ClientClass:waitForHandshake()
+	local result = true
+	return result
+end
+
+function ClientClass:handleEvent()
+	local result = true
+	local code = CODE_EXIT
+
+	return result, code
 end
 
 
