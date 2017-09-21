@@ -1,4 +1,4 @@
-# computercraft-redstone-control
+# Redstone Control
 Server/Client Computercraft programs to control remote redstone signals
 
 ## Features
