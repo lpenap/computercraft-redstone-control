@@ -42,69 +42,69 @@ REDSTONE_SIDE = "${redstoneSide}"
 
 -- Class that implements all client functions
 ClientClass = {
-	keepAlive = 60,
-	name = "Generic Client",
-	redstoneState = 1,
-	redstoneSide = "front",
-	serverSecret = "Change_Me"
+  keepAlive = 60,
+  name = "Generic Client",
+  redstoneState = 1,
+  redstoneSide = "front",
+  serverSecret = "Change_Me"
 }
 
 function ClientClass:new (o)
-	o = o or {}
-	setmetatable(o, self)
-	self.__index = self
-	return o
+  o = o or {}
+  setmetatable(o, self)
+  self.__index = self
+  return o
 end
 
 function ClientClass:setKeepAlive(secs)
-	self.keepAlive = secs
+  self.keepAlive = secs
 end
 
 function ClientClass:getKeepAlive()
-	return self.keepAlive
+  return self.keepAlive
 end
 
 function ClientClass:getName()
-	return self.name
+  return self.name
 end
 
 function ClientClass:getRedstoneState()
-	return self.redstoneState
+  return self.redstoneState
 end
 
 function ClientClass:getRedstoneSide()
-	return self.redstoneSide
+  return self.redstoneSide
 end
 
 function ClientClass:getServerSecret()
-	return self.serverSecret
+  return self.serverSecret
 end
 
 function ClientClass:saveConfig(configFile)
-	local settings = {
-		keepAlive = self.keepAlive,
-		clientName = self.name,
-		redstoneState = self.redstoneState,
-		redstoneSide = self.redstoneSide,
-		serverSecret = self.serverSecret
-	}
-	Util.saveConfig (configFile, CONFIG_TEMPLATE, settings)
+  local settings = {
+    keepAlive = self.keepAlive,
+    clientName = self.name,
+    redstoneState = self.redstoneState,
+    redstoneSide = self.redstoneSide,
+    serverSecret = self.serverSecret
+  }
+  Util.saveConfig (configFile, CONFIG_TEMPLATE, settings)
 end
 
 function ClientClass:loadConfig(configFile)
-	local code, config = Util.loadConfig (configFile)
+  local code, config = Util.loadConfig (configFile)
 
-	if code == Util.CONFIG_NOT_FOUND then
-		self:saveConfig(configFile)
+  if code == Util.CONFIG_NOT_FOUND then
+    self:saveConfig(configFile)
 
-	elseif code == Util.CONFIG_OK then
-		self.keepAlive = config.KEEP_ALIVE
-    	self.name = config.CLIENT_NAME
-    	self.redstoneState = config.REDSTONE_STATE
-    	self.redstoneSide = config.REDSTONE_SIDE
-    	self.serverSecret = config.SERVER_SECRET
-    end
-    return code
+  elseif code == Util.CONFIG_OK then
+    self.keepAlive = config.KEEP_ALIVE
+    self.name = config.CLIENT_NAME
+    self.redstoneState = config.REDSTONE_STATE
+    self.redstoneSide = config.REDSTONE_SIDE
+    self.serverSecret = config.SERVER_SECRET
+  end
+  return code
 end
 
 -- Handshake protocol overview:
@@ -116,15 +116,15 @@ end
 -- 4:   Clients waits for ACK from the server
 -- 5:   Clients returns true
 function ClientClass:waitForHandshake()
-	local result = true
-	return result
+  local result = true
+  return result
 end
 
 function ClientClass:handleEvent()
-	local result = true
-	local code = CODE_EXIT
+  local result = true
+  local code = CODE_EXIT
 
-	return result, code
+  return result, code
 end
 
 
