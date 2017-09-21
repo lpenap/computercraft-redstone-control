@@ -1,5 +1,6 @@
 # Custom
 copy.sh
+test.lua
 
 # Compiled Lua sources
 luac.out

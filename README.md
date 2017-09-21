@@ -3,7 +3,8 @@ Server/Client Computercraft programs to control remote redstone signals
 
 ## Features
 
-## Instalation
+## Installation
+In this section you will find the minecraft requirements, in-game setups and how to install the actual software.
 
 ### Requirements
 This program has been tested with the following versions:
@@ -13,7 +14,18 @@ This program has been tested with the following versions:
 * Mod packs tested:
 	* FTB Infinity Evolved 3.0.1 (Single & Server)
 
-### Minimum Setup
+### Minimum In-game Setup
+
+#### Server
+* A single advanced computer acting as a server will be required.
+* Place a minimum monitor of 2x3 (2 rows, 3 columns) adjacent to the computer.
+* Monitor connected through wired modems are not supported yet.
+
+#### Client(s)
+* Several clients can be installed in the same setup.
+* Clients needs only an advanced computer to run, they don't require monitors.
+* They need to be touching the machine they need to control or being connected with vanilla redstone.
+* Bundle redstone cables doesn't work with this version of Computercraft.
 
 ### Software Install
 
