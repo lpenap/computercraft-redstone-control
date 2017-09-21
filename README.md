@@ -2,10 +2,8 @@
 Server/Client Computercraft programs to control remote redstone signals
 
 ## Features
-----------------------
 
 ## Instalation
-----------------------
 
 ### Requirements
 This program has been tested with the following versions:
@@ -20,7 +18,6 @@ This program has been tested with the following versions:
 ### Software Install
 
 ## Issues
-----------------------
 Program crashing, have a suggestion, found a bug? 
 Go to the issues page and create a new issue:
 * Enter a title for your issue (something that summarizes your issue), and then create a detailed description:
@@ -28,11 +25,11 @@ Go to the issues page and create a new issue:
 	* Restrict it to a single bug or feature, it makes managing them way easier.
 	* The following details are required:
 		* Forge version
-        * redstone-control version
-        * Computercraft version
-        * Other mods interacting with computercraft in your setup
-        * Mod Pack used and version (if any)
-        * A detailed description of the bug or feature
+        	* redstone-control version
+        	* Computercraft version
+        	* Other mods interacting with computercraft in your setup
+        	* Mod Pack used and version (if any)
+        	* A detailed description of the bug or feature
     * To further help in resolving your issues please try to include the follow if applicable:
         * What was expected?
         * How to reproduce the problem?
