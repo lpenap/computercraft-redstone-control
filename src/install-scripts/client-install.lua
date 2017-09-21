@@ -3,7 +3,7 @@
 
 local tree = select(1,...)
 if not tree then
-  tree = 'master'
+  tree = 'develop'
 end
 
 local repo = 'lpenap/computercraft-redstone-control'
