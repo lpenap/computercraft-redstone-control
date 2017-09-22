@@ -1,11 +1,12 @@
 -- Client API
 
-os.loadAPI("api/Util")
+os.loadAPI("api/Config")
 
 -- Global variables and constants
 CODE_EXIT = 99
 CODE_KEEP_ALIVE = 10
 CODE_RECEIVE_MSG = 50
+VERSION = 1
 
 -- Local variables
 local CONFIG_TEMPLATE = [[--
@@ -88,16 +89,16 @@ function ClientClass:saveConfig(configFile)
     redstoneSide = self.redstoneSide,
     serverSecret = self.serverSecret
   }
-  Util.saveConfig (configFile, CONFIG_TEMPLATE, settings)
+  Config.saveConfig (configFile, CONFIG_TEMPLATE, settings)
 end
 
 function ClientClass:loadConfig(configFile)
-  local code, config = Util.loadConfig (configFile)
+  local code, config = Config.loadConfig (configFile)
 
-  if code == Util.CONFIG_NOT_FOUND then
+  if code == Config.CONFIG_NOT_FOUND then
     self:saveConfig(configFile)
 
-  elseif code == Util.CONFIG_OK then
+  elseif code == Config.CONFIG_OK then
     self.keepAlive = config.KEEP_ALIVE
     self.name = config.CLIENT_NAME
     self.redstoneState = config.REDSTONE_STATE
