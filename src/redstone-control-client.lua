@@ -3,8 +3,10 @@ os.loadAPI("api/ClientHelperAPI")
 os.loadAPI("api/Util")
 os.loadAPI("api/Log")
 os.loadAPI("api/Config")
+os.loadAPI("api/Strings")
 
 local CONFIG_FILE = "client.conf"
+
 -- Log.<TRACE|DEBUG|INFO|WARNING|ERROR>
 local LOG_LEVEL = Log.INFO
 
@@ -31,13 +33,13 @@ Config.printHelp (Log, code, CONFIG_FILE)
 
 if code == Config.CONFIG_OK then
   ClientHelperAPI.printConfig(Log, client)
-  Log.info ("Looking up server. This can take some time.")
+  Log.info (Strings.LOOKING_UP_SERVER)
   if not client:waitForHandshake() then
-    Log.error ("Communications error (check modem and try again)")
+    Log.error (Strings.COMMUNICATIONS_ERROR)
   else
-    Log.info ("Server found!, initiating client loop...")
+    Log.info (Strings.SERVER_FOUND)
     ClientHelperAPI.printMenu()
     clientLoop(client)
   end
 end
-print ("Exiting program.")
+print (Strings.EXITING_PROGRAM)

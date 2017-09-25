@@ -1,6 +1,7 @@
 -- Client API
 
 os.loadAPI("api/Config")
+os.loadAPI("api/Strings")
 
 -- Global variables and constants
 CODE_EXIT = 99
@@ -8,46 +9,13 @@ CODE_KEEP_ALIVE = 10
 CODE_RECEIVE_MSG = 50
 VERSION = 1
 
--- Local variables
-local CONFIG_TEMPLATE = [[--
--- Remote Control Program by lpenap
--- https://github.com/lpenap/computercraft-redstone-control
--- luisau.mc@gmail.com
-
--- Tip: If you think the configuration file is
--- broken, You can delete it safely and the
--- program will generate a new file again.
-
-
--- Client Configuration:
-
--- Secret for your server
--- You will generate this when you run the
--- server for the first time.
-SERVER_SECRET = "${serverSecret}"
-
--- Interval for reporting to server program
--- (in seconds)
-KEEP_ALIVE = ${keepAlive}
-
--- Name of this client Instance
-CLIENT_NAME = "${clientName}"
-
--- Initial state of redstone signal
--- 1 for ON, or 0 for OFF
-REDSTONE_STATE = ${redstoneState}
-
--- Side for redstone signal
-REDSTONE_SIDE = "${redstoneSide}"
-]]
-
 -- Class that implements all client functions
 ClientClass = {
   keepAlive = 60,
-  name = "Generic Client",
+  name = Strings.GENERIC_CLIENT,
   redstoneState = 1,
-  redstoneSide = "front",
-  serverSecret = "Change_Me"
+  redstoneSide = Strings.FRONT,
+  serverSecret = Strings.CHANGE_ME
 }
 
 function ClientClass:new (o)
@@ -81,6 +49,15 @@ function ClientClass:getServerSecret()
   return self.serverSecret
 end
 
+function ClientClass:setRedstoneState(newState)
+  self.redstoneState = newState
+  local state = false
+  if newState > 0 then
+    state = true
+  end
+  redstone.setOutput(self.redstoneSide, state)
+end
+
 function ClientClass:saveConfig(configFile)
   local settings = {
     keepAlive = self.keepAlive,
@@ -89,7 +66,7 @@ function ClientClass:saveConfig(configFile)
     redstoneSide = self.redstoneSide,
     serverSecret = self.serverSecret
   }
-  Config.saveConfig (configFile, CONFIG_TEMPLATE, settings)
+  Config.saveConfig (configFile, Strings.CONFIG_TEMPLATE, settings)
 end
 
 function ClientClass:loadConfig(configFile)
@@ -101,9 +78,9 @@ function ClientClass:loadConfig(configFile)
   elseif code == Config.CONFIG_OK then
     self.keepAlive = config.KEEP_ALIVE
     self.name = config.CLIENT_NAME
-    self.redstoneState = config.REDSTONE_STATE
     self.redstoneSide = config.REDSTONE_SIDE
     self.serverSecret = config.SERVER_SECRET
+    self:setRedstoneState(config.REDSTONE_STATE)
   end
   return code
 end
@@ -118,6 +95,7 @@ end
 -- 5:   Clients returns true
 function ClientClass:waitForHandshake()
   local result = true
+
   return result
 end
 
@@ -127,5 +105,3 @@ function ClientClass:handleEvent()
 
   return result, code
 end
-
-
