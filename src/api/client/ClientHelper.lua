@@ -2,6 +2,7 @@
 -- Helper functions for the Client program
 
 os.loadAPI("api/Strings")
+os.loadAPI("api/Util")
 
 function printHeader (version)
   term.clear()
@@ -19,7 +20,14 @@ function printConfig(log, client)
 end
 
 function validateComputer()
+  local messages = Strings.EMPTY_STRING
   if not term.isColor() then
-    error (Strings.ADVANCED_COMPUTER_NEEDED)
+    messages = ("%s\n%s"):format(messages, Strings.ADVANCED_COMPUTER_NEEDED)
+  end
+  if Util.getModemSide == nil then
+    messages = ("%s\n%s"):format(messages, Strings.MODEM_NEEDED)
+  end
+  if messages ~= Strings.EMPTY_STRING then
+    error (mesages)
   end
 end

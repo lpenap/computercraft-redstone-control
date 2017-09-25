@@ -16,7 +16,8 @@ NAME = "  Name:           %q"
 
 REDSTONE_STATE = "  Redstone state: %d - %q"
 
-ADVANCED_COMPUTER_NEEDED = "An advanced computer is needed for this to run"
+ADVANCED_COMPUTER_NEEDED = "An advanced computer is needed for this to run."
+MODEM_NEEDED = "A modem is needed attached to this computer."
 
 HEADER = [[
 Client for Redstone Control v%s
