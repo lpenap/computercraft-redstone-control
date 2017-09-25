@@ -1,6 +1,11 @@
--- All the strings and messages used
+-- All the strings and used messages
 
-CONTROL_PROTOCOL = "redstone_control_lpenap"
+--
+-- These strings could be changed or localized
+--
+SENDING_KEEP_ALIVE = "Sending keep alive to server."
+
+REDNET_PROTOCOL_MSG_RECEIVED = "Received rednet message from redstone control protocol."
 
 EXITING_PROGRAM = "Exiting program."
 
@@ -31,24 +36,54 @@ Available options:
   k : Force keep alive now
 ]]
 
-MODEM = "modem"
-
-TRUE = "true"
-
-FALSE = "false"
-
 GENERIC_CLIENT = "Generic Client"
-
-FRONT = "front"
 
 CHANGE_ME = "Change_Me"
 
-CONFIG_TEMPLATE = [[--
+MSG_CONFIG_NOT_FOUND = [[
+  Can't find configuration file.
+
+  A new configuration file was generated.
+  Configuration located at %s
+  You may edit this file to change default
+  settings.
+  Run the program again when done.
+]]
+
+MSG_CONFIG_SYNTAX_ERROR = [[
+  Syntax error in config file %s
+  Try fixing it and restart the program.
+
+  Tip: You can delete the config file and
+       it will be created again!.
+]]
+
+MSG_CONFIG_LOAD_ERROR = [[
+  Could not find the necessary config.
+  The file exists, but the config could not be
+  loaded due to an unkown error.
+  Try restarting the program again.
+  
+  Tip: You can delete the config file and
+       it will be created again!.
+]]
+
+MSG_CONFIGURATION_LOADED = "Configuration loaded."
+
+MSG_ERROR_LOADING_CONFIG = "Unknown fatal error while loading config file."
+
+UNKNOWN_EVENT = "Unknown event received: %s"
+
+--
+-- Program specific messages. These strings should
+-- be changed only by advanced users.
+--
+CONFIG_TEMPLATE = [[
 -- Remote Control Program by lpenap
 -- https://github.com/lpenap/computercraft-redstone-control
 -- luisau.mc@gmail.com
 
--- Tip: If you think the configuration file is
+-- Tip: If you think this configuration file is
 -- broken, You can delete it safely and the
 -- program will generate a new file again.
 
@@ -74,37 +109,27 @@ REDSTONE_STATE = ${redstoneState}
 REDSTONE_SIDE = "${redstoneSide}"
 ]]
 
+CONTROL_PROTOCOL = "redstone_control_lpenap"
+
+--
+-- Computercraft specific Strings. These should
+-- not be changed or translated unless you know
+-- what you are doing.
+--
+MODEM = "modem"
+
+EVENT_TIMER = "timer"
+
+EVENT_KEY = "key"
+
+EVENT_REDNET = "rednet_message"
+
+TRUE = "true"
+
+FALSE = "false"
+
+FRONT = "front"
+
 DIR_SEP = "/"
 
 EMPTY_STRING = ""
-
-MSG_CONFIG_NOT_FOUND = [[
-  Can't find configuration file.
-
-  A new configuration file was generated.
-  Configuration located at %s
-  You may edit this file to change default settings.
-  Run the program again when done.
-]]
-
-MSG_CONFIG_SYNTAX_ERROR = [[
-  Syntax error in config file %s
-  Try fixing it and restart the program.
-
-  Tip: You can delete the config file and
-       it will be created again!.
-]]
-
-MSG_CONFIG_LOAD_ERROR = [[
-  Could not find the necessary config.
-  The file exists, but the config could not be
-  loaded due to an unkown error.
-  Try restarting the program again.
-  
-  Tip: You can delete the config file and
-       it will be created again!.
-]]
-
-MSG_CONFIGURATION_LOADED = "Configuration loaded."
-
-MSG_ERROR_LOADING_CONFIG = "Unknown fatal error while loading config file."

@@ -3,6 +3,7 @@
 os.loadAPI("api/Config")
 os.loadAPI("api/Strings")
 os.loadAPI("api/Util")
+os.loadAPI("api/Log")
 
 -- Global variables and constants
 CODE_EXIT = 99
@@ -108,9 +109,32 @@ function ClientClass:waitForHandshake()
   return result
 end
 
+function ClientClass:sendKeepAlive()
+  Log.debug(Strings.SENDING_KEEP_ALIVE)
+end
+
+function ClientClass:handleRednetMessage(event)
+  Log.debug(Strings.REDNET_PROTOCOL_MSG_RECEIVED)
+end
+
 function ClientClass:handleEvent()
   local result = true
   local code = CODE_EXIT
-
+  local keepAliveTimer = os.startTimer(self.keepAlive)
+  while true do
+    local event = {os.pullEvent()}
+    Util.printInfo(event)
+    if (event[1] == Strings.EVENT_TIMER and event[2] == keepAliveTimer) then
+      self:sendKeepAlive()
+    elseif (event[1] == Strings.EVENT_KEY and event[2] == keys.q) then
+      break
+    elseif (event[1] == Strings.EVENT_KEY and event[2] == keys.k) then
+      self:sendKeepAlive()
+    elseif (event[1] == Strings.EVENT_REDNET and event[3] == Strings.CONTROL_PROTOCOL) then
+      self:handleRednetMessage(event)
+    else
+      Log.debug(Strings.UNKNOWN_EVENT, event[1])
+    end
+  end
   return result, code
 end

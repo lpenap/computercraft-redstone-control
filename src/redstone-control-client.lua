@@ -12,14 +12,14 @@ os.loadAPI("api/Strings")
 local CONFIG_FILE = "client.conf"
 
 -- Log.<TRACE|DEBUG|INFO|WARNING|ERROR>
-local LOG_LEVEL = Log.INFO
+local LOG_LEVEL = Log.TRACE
 
 -- Main client loop (after handshake)
 local function clientLoop (client)
   local exit = false
   while not exit do
     local result, code = client:handleEvent()
-    if code == ClientAPI.CODE_EXIT then
+    if code == Client.CODE_EXIT then
       exit = true
     end
     Log.info ("Code: %d , result: %s", code, Util.booleanToString(result))
@@ -28,8 +28,8 @@ end
 
 -- Client Program
 Log.setLogLevel(LOG_LEVEL)
-ClientHelper.validateComputer()
 ClientHelper.printHeader(Client.VERSION)
+Util.validateComputer()
 
 local client = Client.create()
 local code = client:loadConfig (CONFIG_FILE)

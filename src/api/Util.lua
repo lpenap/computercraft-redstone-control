@@ -2,6 +2,7 @@
 -- General utility functions used on both client and server.
 
 os.loadAPI("api/Strings")
+os.loadAPI("api/Log")
 
 function booleanToString (booleanValue)
   if booleanValue then
@@ -24,4 +25,26 @@ function getModemSide ()
     end
   end
   return modemSide
+end
+
+-- Check computer for required components
+function validateComputer()
+  local messages = Strings.EMPTY_STRING
+  if not term.isColor() then
+    messages = ("%s\n%s"):format(messages, Strings.ADVANCED_COMPUTER_NEEDED)
+  end
+  if Util.getModemSide == nil then
+    messages = ("%s\n%s"):format(messages, Strings.MODEM_NEEDED)
+  end
+  if messages ~= Strings.EMPTY_STRING then
+    error (mesages)
+  end
+end
+
+-- Prints event info
+function printInfo(event)
+  Log.debug("Event Received:")
+  for k, v in pairs(event) do
+    Log.debug("   %s : %s", tostring(k), tostring(v))
+  end
 end
