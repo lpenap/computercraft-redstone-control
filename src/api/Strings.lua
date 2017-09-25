@@ -1,5 +1,7 @@
 -- All the strings and messages used
 
+CONTROL_PROTOCOL = "redstone_control_lpenap"
+
 EXITING_PROGRAM = "Exiting program."
 
 SERVER_FOUND = "Server found!, initiating client loop..."

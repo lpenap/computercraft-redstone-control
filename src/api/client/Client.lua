@@ -2,12 +2,18 @@
 
 os.loadAPI("api/Config")
 os.loadAPI("api/Strings")
+os.loadAPI("api/Util")
 
 -- Global variables and constants
 CODE_EXIT = 99
 CODE_KEEP_ALIVE = 10
 CODE_RECEIVE_MSG = 50
 VERSION = 1
+
+-- Computercraft's os.loadAPI friendly creator
+function create()
+  return ClientClass:new()
+end
 
 -- Class that implements all client functions
 ClientClass = {
@@ -95,7 +101,10 @@ end
 -- 5:   Clients returns true
 function ClientClass:waitForHandshake()
   local result = true
-
+  local side = Util.getModemSide()
+  if side == nil then
+    result = false
+  end
   return result
 end
 

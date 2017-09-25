@@ -1,5 +1,9 @@
-os.loadAPI("api/ClientAPI")
-os.loadAPI("api/ClientHelperAPI")
+-- Computercraft Redstone Control Client by lpenap
+-- Available from repo:
+-- https://github.com/lpenap/computercraft-redstone-control
+
+os.loadAPI("api/client/Client")
+os.loadAPI("api/client/ClientHelper")
 os.loadAPI("api/Util")
 os.loadAPI("api/Log")
 os.loadAPI("api/Config")
@@ -24,21 +28,21 @@ end
 
 -- Client Program
 Log.setLogLevel(LOG_LEVEL)
-ClientHelperAPI.validateComputer()
-ClientHelperAPI.printHeader(ClientAPI.VERSION)
+ClientHelper.validateComputer()
+ClientHelper.printHeader(Client.VERSION)
 
-local client = ClientAPI.ClientClass:new()
+local client = Client.create()
 local code = client:loadConfig (CONFIG_FILE)
 Config.printHelp (Log, code, CONFIG_FILE)
 
 if code == Config.CONFIG_OK then
-  ClientHelperAPI.printConfig(Log, client)
+  ClientHelper.printConfig(Log, client)
   Log.info (Strings.LOOKING_UP_SERVER)
   if not client:waitForHandshake() then
     Log.error (Strings.COMMUNICATIONS_ERROR)
   else
     Log.info (Strings.SERVER_FOUND)
-    ClientHelperAPI.printMenu()
+    ClientHelper.printMenu()
     clientLoop(client)
   end
 end
