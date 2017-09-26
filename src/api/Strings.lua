@@ -3,13 +3,36 @@
 --
 -- These strings could be changed or localized
 --
+
+WAITING_FOR_AVAILABLE_MODEM = "Waiting for available modem."
+
+MESSAGE_SENT = "Message sent."
+
+MESSAGE_RECEIVED = "Message received."
+
+MESSAGE_RECEIVED_FROM_SENDER = "Message received from: %s"
+
+PROCESSING_MESSAGE_VERSION = "Processing message version %s"
+
+ERROR_SENDING_MESSAGE = "Error sending message. Retrying."
+
 SENDING_KEEP_ALIVE = "Sending keep alive to server."
+
+HANDSHAKING = "Handshaking with server."
+
+RECEIVED_MSG_FROM_SERVER = "Received message from my configured server."
+
+RECEIVED_FROM_UNKNOWN_SERVER =  "Received message from unknown server: %s"
 
 REDNET_PROTOCOL_MSG_RECEIVED = "Received rednet message from redstone control protocol."
 
 EXITING_PROGRAM = "Exiting program."
 
 SERVER_FOUND = "Server found!, initiating client loop..."
+
+SERVERS_FOUND = "Servers found: %s"
+
+SERVER_UNAVAILABLE = "Server unavailable, retrying in %s seconds"
 
 COMMUNICATIONS_ERROR = "Communications error (check modem and try again)"
 
@@ -74,20 +97,26 @@ MSG_ERROR_LOADING_CONFIG = "Unknown fatal error while loading config file."
 
 UNKNOWN_EVENT = "Unknown event received: %s"
 
+-- End of localizable Strings.
+
 --
 -- Program specific messages. These strings should
 -- be changed only by advanced users.
+-- Keep in mind that there could be variable
+-- names that could not be changed without
+-- affecting the program behavior.
 --
 CONFIG_TEMPLATE = [[
 -- Remote Control Program by lpenap
 -- https://github.com/lpenap/computercraft-redstone-control
 -- luisau.mc@gmail.com
 
+-- Client Configuration
+
 -- Tip: If you think this configuration file is
 -- broken, You can delete it safely and the
--- program will generate a new file again.
-
--- Client Configuration:
+-- program will generate a new file and you
+-- will need to write your settings again.
 
 -- Secret for your server
 -- You will generate this when you run the
@@ -109,7 +138,7 @@ REDSTONE_STATE = ${redstoneState}
 REDSTONE_SIDE = "${redstoneSide}"
 ]]
 
-CONTROL_PROTOCOL = "redstone_control_lpenap"
+CONTROL_PROTOCOL = "lpenap/redstone-control"
 
 --
 -- Computercraft specific Strings. These should

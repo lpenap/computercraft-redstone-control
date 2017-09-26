@@ -3,6 +3,7 @@
 
 os.loadAPI("api/Strings")
 os.loadAPI("api/Log")
+os.loadAPI("api/Json")
 
 function booleanToString (booleanValue)
   if booleanValue then
@@ -42,9 +43,30 @@ function validateComputer()
 end
 
 -- Prints event info
-function printInfo(event)
-  Log.debug("Event Received:")
+function printTrace(event)
+  Log.debug("Event Received.")
   for k, v in pairs(event) do
-    Log.debug("   %s : %s", tostring(k), tostring(v))
+    Log.trace("   %s : %s", tostring(k), tostring(v))
   end
+end
+
+function length(table)
+  local count = 0
+  for _ in pairs(table) do
+    count = count + 1
+  end
+  return count
+end
+
+function createMessage(protocolVersion, table)
+  local message = {
+    version = procolVersion,
+    data = table
+  }
+  return Json.encode(message)
+end
+
+function getDataFromMessage(json)
+  local message = Json.decode(json)
+  return message.version, message.data
 end
