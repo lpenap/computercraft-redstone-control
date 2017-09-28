@@ -4,6 +4,10 @@
 -- These strings could be changed or localized
 --
 
+SEND_ON_TO_ALL = "Sending redstone state ON to all clients."
+
+SEND_OFF_TO_ALL = "Sending redstone state OFF to all clients."
+
 WAITING_FOR_AVAILABLE_MODEM = "Waiting for available modem."
 
 MESSAGE_SENT = "Message sent."
@@ -11,6 +15,8 @@ MESSAGE_SENT = "Message sent."
 MESSAGE_RECEIVED = "Message received."
 
 MESSAGE_RECEIVED_FROM_SENDER = "Message received from: %s"
+
+MESSAGE_RECEIVED_FROM_UNKNOWN_SENDER = "Message received from unknown client: %s"
 
 PROCESSING_MESSAGE_VERSION = "Processing message version %s"
 
@@ -38,11 +44,13 @@ COMMUNICATIONS_ERROR = "Communications error (check modem and try again)"
 
 LOOKING_UP_SERVER = "Looking up server. This can take some time."
 
-KEEP_ALIVE = "  Keep alive:     %d sec"
+KEEP_ALIVE =     "  Keep alive:     %d sec"
 
-NAME = "  Name:           %q"
+NAME =            "  Name:           %q"
 
 REDSTONE_STATE = "  Redstone state: %d - %q"
+
+MONITOR_UPDATE = "  Monitor update: %d sec"
 
 ADVANCED_COMPUTER_NEEDED = "An advanced computer is needed for this to run."
 MODEM_NEEDED = "A modem is needed attached to this computer."
@@ -53,13 +61,29 @@ Check repo for more info or instructions
 github.com/lpenap/computercraft-redstone-control
 ]]
 
+SERVER_HEADER = [[
+Server for Redstone Control v%s
+Check repo for more info or instructions
+github.com/lpenap/computercraft-redstone-control
+]]
+
+
 MENU = [[
 Available options:
   q : Quit
   k : Force keep alive now
 ]]
 
+SERVER_MENU = [[
+Available options:
+  q : Quit
+  1 : Turn all clients ON
+  0 : Turn all clients OFF
+]]
+
 GENERIC_CLIENT = "Generic Client"
+
+DEFAULT_SERVER_NAME = "Redstone Control"
 
 CHANGE_ME = "Change_Me"
 
@@ -136,6 +160,35 @@ REDSTONE_STATE = ${redstoneState}
 
 -- Side for redstone signal
 REDSTONE_SIDE = "${redstoneSide}"
+]]
+
+SERVER_CONFIG_TEMPLATE = [[
+-- Remote Control Program by lpenap
+-- https://github.com/lpenap/computercraft-redstone-control
+-- luisau.mc@gmail.com
+
+-- Server Configuration
+
+-- Tip: If you think this configuration file is
+-- broken, You can delete it safely and the
+-- program will generate a new file and you
+-- will need to write your settings again.
+
+-- Secret for your server
+-- You will generate this when you run the
+-- server for the first time.
+-- Also, You can change it here too. You will need
+-- this secret in your clients so they can 
+-- communicate with this server without
+-- interference.
+SERVER_SECRET = "${serverSecret}"
+
+-- Interval for updating monitors
+-- (in seconds)
+MONITOR_UPDATE = ${monitorUpdate}
+
+-- Name of this Server Instance
+SERVER_NAME = "${serverName}"
 ]]
 
 CONTROL_PROTOCOL = "lpenap/redstone-control"

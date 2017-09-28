@@ -271,6 +271,7 @@ function ClientClass:handleEvent()
   local event = {os.pullEvent()}
   Util.printTrace(event)
   if self:isEventKeepAlive(event) then
+    self._keepAliveTimer = nil
     result = self:sendKeepAlive()
     code = CODE_KEEP_ALIVE
   elseif self:isEventExit(event) then
