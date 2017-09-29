@@ -17,15 +17,25 @@ CODE_TURN_ALL_OFF = 80
 local COMM_RETRIES = 10
 local COMM_INTERVAL = 5
 local MONITOR_UPDATE = 2
+local DEFAULT_REDSTONE_STATE = 0
+local NEVER = -1
 
 -- Computercraft's os.loadAPI friendly creator
 function create()
   return ServerClass:new()
 end
 
+-- TODO use this class per each registered client
+ClientData = {
+  state = DEFAULT_REDSTONE_STATE,
+  lastUpdated = NEVER,
+  name = Strings.GENERIC_CLIENT
+}
+
 -- Class that implements all server functions
 ServerClass = {
   name = Strings.DEFAULT_SERVER_NAME,
+  -- TODO use protocol as server secret, and no the hostname
   serverSecret = Strings.CHANGE_ME,
   monitorUpdate = MONITOR_UPDATE,
   _monitorUpdateTimer = nil,
@@ -197,7 +207,8 @@ function ServerClass:doMonitorUpdate()
 end
 
 --
--- Process and a message received from server
+-- Process and a message received from client
+-- and sends back an ACK
 --
 function ServerClass:processMessage(raw)
   local version, message = Util.getDataFromMessage(raw)
@@ -210,11 +221,14 @@ end
 --
 function ServerClass:handleRednetEvent(event)
   Log.debug(Strings.REDNET_PROTOCOL_MSG_RECEIVED)
-  if self.clients[event[2]] ~= nill then
+  local clientId = event[2]
+  local jsonMessage = event[3]
+  if self.clients[clientId] ~= nill then
     Log.trace(Strings.MESSAGE_RECEIVED_FROM_SENDER)
-    processMessage(event[3])
+    self:processMessage(jsonMessage)
+    self:sendRedstoneStateToClient(clientId, self.clients[client])
   else
-    Log.trace(Strings.MESSAGE_RECEIVED_FROM_UNKNOWN_SENDER, tostring(event[2]))
+    Log.trace(Strings.MESSAGE_RECEIVED_FROM_UNKNOWN_SENDER, tostring(clientId))
   end
 end
 

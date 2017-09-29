@@ -5,7 +5,9 @@ os.loadAPI("api/Strings")
 os.loadAPI("api/Util")
 os.loadAPI("api/Log")
 
+--
 -- Global variables and constants
+--
 CODE_EXIT = 99
 CODE_KEEP_ALIVE = 10
 CODE_RECEIVE_MSG = 50
@@ -18,25 +20,37 @@ local COMM_INTERVAL = 5
 local CLIENT_KEEPALIVE = 60
 local REDSTONE_STATE = 1
 
+--
 -- Computercraft's os.loadAPI friendly creator
+-- Instance this class as:
+-- os.loadAPI("api/Client")
+-- client = Client.create()
+--
 function create()
   return ClientClass:new()
 end
 
+--
 -- Class that implements all client functions
+--
 ClientClass = {
-  keepAlive = CLIENT_KEEPALIVE,
   _commInterval = COMM_INTERVAL,
   _commRetries = COMM_RETRIES,
-  name = Strings.GENERIC_CLIENT,
-  redstoneState = REDSTONE_STATE,
-  redstoneSide = Strings.FRONT,
-  serverSecret = Strings.CHANGE_ME,
   _keepAliveTimer = nil,
   _serverId = UNKNOWN_SERVER_ID,
-  _modemSide = nil
+  _modemSide = nil,
+  
+  name = Strings.GENERIC_CLIENT,
+  keepAlive = CLIENT_KEEPALIVE,
+  redstoneState = REDSTONE_STATE,
+  redstoneSide = Strings.FRONT,
+  serverSecret = Strings.CHANGE_ME
 }
 
+--
+-- Class constructor
+-- Wrapped by the create() function
+--
 function ClientClass:new (o)
   o = o or {}
   setmetatable(o, self)
@@ -44,6 +58,9 @@ function ClientClass:new (o)
   return o
 end
 
+--
+-- Getters and setters used
+--
 function ClientClass:setKeepAlive(secs)
   self.keepAlive = secs
 end
@@ -286,6 +303,9 @@ function ClientClass:handleEvent()
   return result, code
 end
 
+--
+-- Event checking functions
+--
 function ClientClass:isEventKeepAlive(event)
   return ((event[1] == Strings.EVENT_TIMER and event[2] == self._keepAliveTimer)
     or (event[1] == Strings.EVENT_KEY and event[2] == keys.k))
