@@ -133,7 +133,7 @@ end
 function ClientClass:waitForServerLookup()
   local serverFound = false
   while not serverFound do
-    local servers = {rednet.lookup(Strings.CONTROL_PROTOCOL, self.serverSecret)}
+    local servers = {rednet.lookup(self.serverSecret, Strings.SERVER_HOSTNAME)}
     Log.debug(Strings.SERVERS_FOUND, Util.length(servers))
     if Util.length(servers) > 0 then
       serverFound = true
@@ -173,7 +173,7 @@ function sendClientData()
   local messageSent = false
   local retries = self._commRetries
   while ((not messageSent) and (retries > 0)) do
-    messageSent = rednet.send(self._serverId, Util.createMessage(VERSION, data), Strings.CONTROL_PROTOCOL)
+    messageSent = rednet.send(self._serverId, Util.createMessage(VERSION, data), self.serverSecret)
     if messageSent then
       Log.debug(String.MESSAGE_SENT)
     else
@@ -204,8 +204,8 @@ function ClientClass:sendAndWaitResponse()
   local messageReceived = false
   retries = _commRetries
   while ((not messageReceived) and (retries > 0)) do
-    local senderId, rawMessage, protocol = rednet.receive(Strings.CONTROL_PROTOCOL)
-    if ((protocol == Strings.CONTROL_PROTOCOL) and (senderId == self._serverId)) then
+    local senderId, rawMessage, secret = rednet.receive(self.serverSecret)
+    if ((secret == self.serverSecret) and (senderId == self._serverId)) then
       Log.debug(Strings.MESSAGE_RECEIVED)
       Log.trace(rawMessage)
       messageReceived = true
@@ -316,5 +316,5 @@ function ClientClass:isEventExit(event)
 end
 
 function ClientClass:isEventRednet(event)
-  return (event[1] == Strings.EVENT_REDNET and event[4] == Strings.CONTROL_PROTOCOL)
+  return (event[1] == Strings.EVENT_REDNET and event[4] == self.serverSecret)
 end

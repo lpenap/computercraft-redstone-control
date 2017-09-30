@@ -35,7 +35,6 @@ ClientData = {
 -- Class that implements all server functions
 ServerClass = {
   name = Strings.DEFAULT_SERVER_NAME,
-  -- TODO use protocol as server secret, and no the hostname
   serverSecret = Strings.CHANGE_ME,
   monitorUpdate = MONITOR_UPDATE,
   _monitorUpdateTimer = nil,
@@ -118,7 +117,7 @@ function ServerClass:sendRedstoneStateToClient(clientId, state)
   local messageSent = false
   local retries = self._commRetries
   while ((not messageSent) and (retries > 0)) do
-    messageSent = rednet.send(clientId, Util.createMessage(VERSION, data), Strings.CONTROL_PROTOCOL)
+    messageSent = rednet.send(clientId, Util.createMessage(VERSION, data), self.serverSecret)
     if messageSent then
       Log.debug(String.MESSAGE_SENT)
     else
@@ -226,6 +225,7 @@ function ServerClass:handleRednetEvent(event)
   if self.clients[clientId] ~= nill then
     Log.trace(Strings.MESSAGE_RECEIVED_FROM_SENDER)
     self:processMessage(jsonMessage)
+    -- TODO fix this, send not only the redstone state but all data
     self:sendRedstoneStateToClient(clientId, self.clients[client])
   else
     Log.trace(Strings.MESSAGE_RECEIVED_FROM_UNKNOWN_SENDER, tostring(clientId))
@@ -303,5 +303,5 @@ function ServerClass:isEventExit(event)
 end
 
 function ServerClass:isEventRednet(event)
-  return (event[1] == Strings.EVENT_REDNET and event[4] == Strings.CONTROL_PROTOCOL)
+  return (event[1] == Strings.EVENT_REDNET and event[4] == self.serverSecret)
 end

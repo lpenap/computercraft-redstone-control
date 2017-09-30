@@ -191,7 +191,7 @@ MONITOR_UPDATE = ${monitorUpdate}
 SERVER_NAME = "${serverName}"
 ]]
 
-CONTROL_PROTOCOL = "lpenap/redstone-control"
+SERVER_HOSTNAME = "lpenap/redstone-control-server"
 
 --
 -- Computercraft specific Strings. These should
