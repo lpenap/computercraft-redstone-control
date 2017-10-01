@@ -20,19 +20,55 @@ local MONITOR_UPDATE = 2
 local DEFAULT_REDSTONE_STATE = 0
 local NEVER = -1
 
--- Computercraft's os.loadAPI friendly creator
-function create()
-  return ServerClass:new()
-end
-
--- TODO use this class per each registered client
-ClientData = {
+--
+-- Internal class to handle all data from clients
+--
+local ClientData = {
   state = DEFAULT_REDSTONE_STATE,
   lastUpdated = NEVER,
   name = Strings.GENERIC_CLIENT
 }
 
+function ClientData:new(o)
+  o = o or {}
+  setmetatable(o, self)
+  self.__index = self
+  return o
+end
+
+function ClientData:setState(newState)
+  self.state = newState
+  self.lastUpdated = os.clock()
+end
+
+function ClientData:getState()
+  return self.state
+end
+
+function ClientData:setName (newName)
+  self.name = newName
+end
+
+function ClientData:getLastUpdatedString()
+  local str = Strings.NEVER
+  if self.lastUpdated ~= NEVER then
+    -- TODO allow for more units
+    str = (Strings.TIME_AGO):format(os.clock() - self.lastUpdated, "s")
+  end
+  return str
+end
+
+--
+-- Computercraft's os.loadAPI friendly creator
+-- for ServerClass
+--
+function create()
+  return ServerClass:new()
+end
+
+--
 -- Class that implements all server functions
+--
 ServerClass = {
   name = Strings.DEFAULT_SERVER_NAME,
   serverSecret = Strings.CHANGE_ME,
@@ -44,6 +80,9 @@ ServerClass = {
   clients = {}
 }
 
+--
+-- ServerClass constructor
+--
 function ServerClass:new (o)
   o = o or {}
   setmetatable(o, self)
@@ -51,6 +90,9 @@ function ServerClass:new (o)
   return o
 end
 
+--
+-- Getters and setters used
+--
 function ServerClass:getName()
   return self.name
 end
@@ -61,6 +103,13 @@ end
 
 function ServerClass:getMonitorUpdate()
   return self.monitorUpdate
+end
+
+function ServerClass:addClient(id, state, name)
+  local client = ClientData:new()
+  client:setState(state)
+  client:setName(name)
+  self.clients[id] = client
 end
 
 --
@@ -209,11 +258,10 @@ end
 -- Process and a message received from client
 -- and sends back an ACK
 --
-function ServerClass:processMessage(raw)
-  local version, message = Util.getDataFromMessage(raw)
-  log.trace(Strings.PROCESSING_MESSAGE_VERSION, tostring(version))
+function ServerClass:processMessage(data)
+  -- TODO process message on server
+  log.trace(Strings.PROCESSING_MESSAGE)
 end
-
 
 --
 -- Handles event receiving from server
@@ -222,14 +270,20 @@ function ServerClass:handleRednetEvent(event)
   Log.debug(Strings.REDNET_PROTOCOL_MSG_RECEIVED)
   local clientId = event[2]
   local jsonMessage = event[3]
-  if self.clients[clientId] ~= nill then
-    Log.trace(Strings.MESSAGE_RECEIVED_FROM_SENDER)
-    self:processMessage(jsonMessage)
-    -- TODO fix this, send not only the redstone state but all data
-    self:sendRedstoneStateToClient(clientId, self.clients[client])
+  local clientVersion, data = Util.getDataFromMessage(jsonMessage)
+  if VERSION ~= clientVersion then
+    log.error (Strings.WRONG_PROTOCOL_VERSION_FROM_CLIENT, clientId, VERSION, clientVersion)
   else
-    Log.trace(Strings.MESSAGE_RECEIVED_FROM_UNKNOWN_SENDER, tostring(clientId))
+    if self.clients[clientId] == nill then
+      Log.trace(Strings.MESSAGE_RECEIVED_FROM_UNKNOWN_SENDER, tostring(clientId))
+      self.addClient(clientId, data.redstone, data.client_name)
+    end
+    Log.trace(Strings.MESSAGE_RECEIVED_FROM_SENDER, tostring(clientId))
+    self:processMessage(data)
+    -- TODO expand the protocol to allow for more data to be transmitted like keepAlive times
+    self:sendRedstoneStateToClient(clientId, self.clients[clientId]:getState())
   end
+
 end
 
 --
@@ -255,6 +309,8 @@ end
 --
 -- Handles all client events.
 --
+
+-- TODO REGISTER HOSTNAME AND OPEN REDNET ON CLIENT AND SERVER
 function ServerClass:handleEvent()
   local result = true
   local code = CODE_UNKNOWN_EVENT

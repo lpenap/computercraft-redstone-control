@@ -4,6 +4,16 @@
 -- These strings could be changed or localized
 --
 
+WRONG_PROTOCOL_VERSION_FROM_CLIENT = [[
+Wrong protocol version from client %d
+Server version is %d, received version %d from client
+You need to update the program on the client (or server)
+]]
+
+NEVER = "Never"
+
+TIME_AGO = "%d%s ago"
+
 SEND_ON_TO_ALL = "Sending redstone state ON to all clients."
 
 SEND_OFF_TO_ALL = "Sending redstone state OFF to all clients."
@@ -16,9 +26,11 @@ MESSAGE_RECEIVED = "Message received."
 
 MESSAGE_RECEIVED_FROM_SENDER = "Message received from: %s"
 
-MESSAGE_RECEIVED_FROM_UNKNOWN_SENDER = "Message received from unknown client: %s"
+MESSAGE_RECEIVED_FROM_UNKNOWN_SENDER = "Message received from unknown client: %s, it will be added."
 
 PROCESSING_MESSAGE_VERSION = "Processing message version %s"
+
+PROCESSING_MESSAGE = "Processing message"
 
 ERROR_SENDING_MESSAGE = "Error sending message. Retrying."
 

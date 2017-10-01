@@ -163,7 +163,7 @@ end
 --
 -- Sends client data to the server
 --
-function sendClientData()
+function ClientClass:sendClientData()
   local data = {
     client_name = self.name,
     redstone = self.redstoneState,
@@ -190,6 +190,7 @@ end
 -- Process and a message received from server
 --
 function ClientClass:processMessage(raw)
+  -- TODO process message in client
   local version, message = Util.getDataFromMessage(raw)
   log.trace(Strings.PROCESSING_MESSAGE_VERSION, tostring(version))
 end
@@ -202,7 +203,7 @@ function ClientClass:sendAndWaitResponse()
 
   -- receiving
   local messageReceived = false
-  retries = _commRetries
+  local retries = self._commRetries
   while ((not messageReceived) and (retries > 0)) do
     local senderId, rawMessage, secret = rednet.receive(self.serverSecret)
     if ((secret == self.serverSecret) and (senderId == self._serverId)) then
@@ -266,10 +267,12 @@ end
 -- Handles event receiving from server
 --
 function ClientClass:handleRednetEvent(event)
+  -- TODO check protocol version from server
   Log.debug(Strings.REDNET_PROTOCOL_MSG_RECEIVED)
   if self._serverId == event[2] then
     Log.trace(Strings.RECEIVED_MSG_FROM_SERVER)
-    processMessage(event[3])
+    self:processMessage(event[3])
+    -- TODO send ACK
   else
     Log.trace(Strings.RECEIVED_FROM_UNKNOWN_SERVER, tostring(event[2]))
   end
