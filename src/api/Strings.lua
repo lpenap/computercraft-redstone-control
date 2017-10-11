@@ -4,9 +4,19 @@
 -- These strings could be changed or localized
 --
 
+WAITING_FOR_MESSAGE_WITH_ID = "Waiting for message with id %s"
+
+UNWANTED_MESSAGE_RECEIVED = "Received unwanted message with id %s"
+
 WRONG_PROTOCOL_VERSION_FROM_CLIENT = [[
 Wrong protocol version from client %d
 Server version is %d, received version %d from client
+You need to update the program on the client (or server)
+]]
+
+WRONG_PROTOCOL_VERSION_FROM_SERVER = [[
+Wrong protocol version from server %d
+Client version is %d, received version %d from server
 You need to update the program on the client (or server)
 ]]
 
@@ -24,7 +34,7 @@ MESSAGE_SENT = "Message sent."
 
 MESSAGE_RECEIVED = "Message received."
 
-MESSAGE_RECEIVED_FROM_SENDER = "Message received from: %s"
+MESSAGE_RECEIVED_FROM_SENDER = "Message received from: %s (%s)"
 
 MESSAGE_RECEIVED_FROM_UNKNOWN_SENDER = "Message received from unknown client: %s, it will be added."
 
@@ -36,13 +46,19 @@ ERROR_SENDING_MESSAGE = "Error sending message. Retrying."
 
 SENDING_KEEP_ALIVE = "Sending keep alive to server."
 
+SENDING_MESSAGE_TO = "Sending message to: %d with id %s"
+
+USING_SEVER = "Using server id: %d"
+
 HANDSHAKING = "Handshaking with server."
+
+COULDNT_HANDSHAKE = "Couldn't handshake with server, sleeping."
 
 RECEIVED_MSG_FROM_SERVER = "Received message from my configured server."
 
 RECEIVED_FROM_UNKNOWN_SERVER =  "Received message from unknown server: %s"
 
-REDNET_PROTOCOL_MSG_RECEIVED = "Received rednet message from redstone control protocol."
+REDNET_PROTOCOL_MSG_RECEIVED = "Received redstone control protocol message."
 
 EXITING_PROGRAM = "Exiting program."
 
@@ -63,6 +79,8 @@ NAME =            "  Name:           %q"
 REDSTONE_STATE = "  Redstone state: %d - %q"
 
 MONITOR_UPDATE = "  Monitor update: %d sec"
+
+UPDATING_MONITOR = "Updating monitor..."
 
 ADVANCED_COMPUTER_NEEDED = "An advanced computer is needed for this to run."
 MODEM_NEEDED = "A modem is needed attached to this computer."
@@ -204,6 +222,12 @@ SERVER_NAME = "${serverName}"
 ]]
 
 SERVER_HOSTNAME = "lpenap/redstone-control-server"
+
+COMMAND = "_COMMAND"
+
+ACK = "ACK"
+
+CLIENT_DATA = "CLIENT_DATA"
 
 --
 -- Computercraft specific Strings. These should

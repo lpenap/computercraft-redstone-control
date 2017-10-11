@@ -13,41 +13,61 @@ function setLogLevel(level)
   logLevel = level
 end
 
-local function printMsg (msg, ...)
-  if msg == nil then
-    print()
-  else
-    print (msg:format(...))
-  end
-end
-
 function trace (msg, ...)
   if logLevel <= TRACE then
-    printMsg(msg, ...)
+    if msg ~= nil then
+      arg = arg or {}
+      print(string.format(msg, unpack(arg)))
+    else
+      print()
+    end
   end
 end
 
 function debug (msg, ...)
+  print ("hhey: "..msg)
   if logLevel <= DEBUG then
-    printMsg(msg, ...)
+    if msg ~= nil then
+      if arg == nil then
+        print ("es nil")
+      end
+      print(string.format(msg, unpack(arg)))
+    else
+      print()
+    end
   end
 end
 
 function info (msg, ...)
   if logLevel <= INFO then
-    printMsg(msg, ...)
+    if msg ~= nil then
+      arg = arg or {}
+      print(string.format(msg, unpack(arg)))
+    else
+      print()
+    end
   end
 end
 
 function warn (msg, ...)
   if logLevel <= WARNING then
-    printMsg(msg, ...)
+    if msg ~= nil then
+      arg = arg or {}
+      print(string.format(msg, unpack(arg)))
+    else
+      print()
+    end
   end
 end
 
 function error (msg, ...)
   if logLevel <= ERROR then
-    printMsg(msg, ...)
+    if msg ~= nil then
+      arg = arg or {}
+      print(string.format(msg, unpack(arg)))
+    else
+      print()
+    end
   end
 end
 

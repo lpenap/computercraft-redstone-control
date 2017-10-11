@@ -4,6 +4,16 @@
 os.loadAPI("api/Strings")
 os.loadAPI("api/Log")
 os.loadAPI("api/Json")
+os.loadAPI("api/Comm")
+
+--
+-- Table used in the random string generator
+--
+local charset = {}
+-- qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567890
+for i = 48,  57 do table.insert(charset, string.char(i)) end
+for i = 65,  90 do table.insert(charset, string.char(i)) end
+for i = 97, 122 do table.insert(charset, string.char(i)) end
 
 function booleanToString (booleanValue)
   if booleanValue then
@@ -34,7 +44,7 @@ function validateComputer()
   if not term.isColor() then
     messages = ("%s\n%s"):format(messages, Strings.ADVANCED_COMPUTER_NEEDED)
   end
-  if Util.getModemSide == nil then
+  if getModemSide == nil then
     messages = ("%s\n%s"):format(messages, Strings.MODEM_NEEDED)
   end
   if messages ~= Strings.EMPTY_STRING then
@@ -58,15 +68,15 @@ function length(table)
   return count
 end
 
-function createMessage(protocolVersion, table)
-  local message = {
-    version = procolVersion,
-    data = table
-  }
-  return Json.encode(message)
+--
+-- Returns a random string of given length
+--
+function randomString(length)
+  math.randomseed(os.time())
+  if length > 0 then
+    return randomString(length - 1) .. charset[math.random(1, #charset)]
+  else
+    return ""
+  end
 end
 
-function getDataFromMessage(json)
-  local message = Json.decode(json)
-  return message.version, message.data
-end

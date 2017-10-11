@@ -4,6 +4,7 @@ os.loadAPI("api/Config")
 os.loadAPI("api/Strings")
 os.loadAPI("api/Util")
 os.loadAPI("api/Log")
+os.loadAPI("api/Comm")
 
 -- Global variables and constants
 VERSION = 1
@@ -16,12 +17,14 @@ CODE_TURN_ALL_OFF = 80
 
 local COMM_RETRIES = 10
 local COMM_INTERVAL = 5
-local MONITOR_UPDATE = 2
+--local MONITOR_UPDATE = 2
+local MONITOR_UPDATE = 200
+
 local DEFAULT_REDSTONE_STATE = 0
 local NEVER = -1
 
 --
--- Internal class to handle all data from clients
+-- Internal class to store data from client
 --
 local ClientData = {
   state = DEFAULT_REDSTONE_STATE,
@@ -51,6 +54,7 @@ end
 
 function ClientData:getLastUpdatedString()
   local str = Strings.NEVER
+  
   if self.lastUpdated ~= NEVER then
     -- TODO allow for more units
     str = (Strings.TIME_AGO):format(os.clock() - self.lastUpdated, "s")
@@ -73,9 +77,11 @@ ServerClass = {
   name = Strings.DEFAULT_SERVER_NAME,
   serverSecret = Strings.CHANGE_ME,
   monitorUpdate = MONITOR_UPDATE,
+
   _monitorUpdateTimer = nil,
   _commInterval = COMM_INTERVAL,
   _commRetries = COMM_RETRIES,
+  _modemSide = nil,
 
   clients = {}
 }
@@ -105,7 +111,7 @@ function ServerClass:getMonitorUpdate()
   return self.monitorUpdate
 end
 
-function ServerClass:addClient(id, state, name)
+function ServerClass:addOrUpdateClient(id, state, name)
   local client = ClientData:new()
   client:setState(state)
   client:setName(name)
@@ -153,135 +159,71 @@ function ServerClass:waitForModem()
       os.sleep(self._commInterval)
     end
   until side ~= nil
+  return side
+end
+
+--
+-- Opens communications channels
+--
+function ServerClass:start()
+  local side = self:waitForModem()
   self._modemSide = side
+  rednet.close()
+  rednet.open(self._modemSide)
+  rednet.host(self.serverSecret, Strings.SERVER_HOSTNAME)
+end
+
+--
+-- Closes communications channels
+--
+function ServerClass:finalize()
+  rednet.unhost(self.serverSecret, Strings.SERVER_HOSTNAME)
+  rednet.close()
 end
 
 --
 -- Sends client data to the server
 --
-function ServerClass:sendRedstoneStateToClient(clientId, state)
+function ServerClass:sendRedstoneStateToClient(clientId, messageId)
   local data = {
-    redstone = state
+    redstone = self.clients[clientId]:getState()
   }
-  local messageSent = false
-  local retries = self._commRetries
-  while ((not messageSent) and (retries > 0)) do
-    messageSent = rednet.send(clientId, Util.createMessage(VERSION, data), self.serverSecret)
-    if messageSent then
-      Log.debug(String.MESSAGE_SENT)
-    else
-      Log.debug (Strings.ERROR_SENDING_MESSAGE)
-    end
-    os.sleep (self._commInterval)
-    retries = retries - 1
-  end
+  Log.trace(Strings.SENDING_MESSAGE_TO, clientId, messageId)
+  local messageSent,_ = Comm.sendData(VERSION, messageId, data, clientId, self.serverSecret)
   return messageSent
 end
-
-
---
--- Sends client state and waits for server ACK
---
---function ClientClass:sendAndWaitResponse()
---  local messageSent = self:sendClientData()
---
---  -- receiving
---  local messageReceived = false
---  retries = _commRetries
---  while ((not messageReceived) and (retries > 0)) do
---    local senderId, rawMessage, protocol = rednet.receive(Strings.CONTROL_PROTOCOL)
---    if ((protocol == Strings.CONTROL_PROTOCOL) and (senderId == self._serverId)) then
---      Log.debug(Strings.MESSAGE_RECEIVED)
---      Log.trace(rawMessage)
---      messageReceived = true
---      self:processMessage(rawMessage)
---    else
---      Log.debug(Strings.MESSAGE_RECEIVED_FROM_SENDER, tostring(senderId))
---    end
---    retries = retries - 1
---  end
---
---  return messageSent and messageReceived
---end
-
---
--- Communicates with the server.
---
--- Communication protocol:
--- 1:   Clients waits for modem.
--- 2:   Client keeps looking up server.
--- 3:   Client sends data. (finite retries)
--- 4:   Clients waits ACK from the server
---      (finite retries)
---
---function ClientClass:communicateWithServer()
---  self:waitForModem()
---  rednet.open(self._modemSide)
---  self:waitForServerLookup()
---  local result = self:sendAndWaitResponse()
---  rednet.close()
---  return result
---end
-
---
--- Handshakes with the server.
---
--- The protocol followed is identical to every
--- communication made against the server.
--- This function keeps communicating with the
--- server until the protocol is fulfilled.
---
---function ClientClass:waitForHandshake()
---  Log.debug (Strings.HANDSHAKING)
---  while not self:communicateWithServer() do
---    os.sleep(self._commInterval)
---  end
---end
-
---
--- Sends a keep alive status message to the server
--- following the communication protocol.
---
---function ClientClass:sendKeepAlive()
---  Log.debug(Strings.SENDING_KEEP_ALIVE)
---  return self:communicateWithServer()
---end
 
 --
 -- Do a monitor update
 --
 function ServerClass:doMonitorUpdate()
-  print("Updating monitor...")
+  Log.trace(Strings.UPDATING_MONITOR)
 end
 
 --
 -- Process and a message received from client
--- and sends back an ACK
 --
 function ServerClass:processMessage(data)
   -- TODO process message on server
-  log.trace(Strings.PROCESSING_MESSAGE)
+  Log.trace(Strings.PROCESSING_MESSAGE)
 end
 
 --
--- Handles event receiving from server
+-- Handles event receiving message from client
 --
 function ServerClass:handleRednetEvent(event)
   Log.debug(Strings.REDNET_PROTOCOL_MSG_RECEIVED)
   local clientId = event[2]
   local jsonMessage = event[3]
-  local clientVersion, data = Util.getDataFromMessage(jsonMessage)
+  local clientVersion, messageId, data = Comm.getDataFromMessage(jsonMessage)
+  Log.trace(Strings.MESSAGE_RECEIVED_FROM_SENDER, tostring(clientId), messageId)
   if VERSION ~= clientVersion then
-    log.error (Strings.WRONG_PROTOCOL_VERSION_FROM_CLIENT, clientId, VERSION, clientVersion)
+    Log.error (Strings.WRONG_PROTOCOL_VERSION_FROM_CLIENT, clientId, VERSION, clientVersion)
   else
-    if self.clients[clientId] == nill then
-      Log.trace(Strings.MESSAGE_RECEIVED_FROM_UNKNOWN_SENDER, tostring(clientId))
-      self.addClient(clientId, data.redstone, data.client_name)
-    end
-    Log.trace(Strings.MESSAGE_RECEIVED_FROM_SENDER, tostring(clientId))
+    self:addOrUpdateClient(clientId, data.redstone, data.client_name)
     self:processMessage(data)
     -- TODO expand the protocol to allow for more data to be transmitted like keepAlive times
-    self:sendRedstoneStateToClient(clientId, self.clients[clientId]:getState())
+    self:sendRedstoneStateToClient(clientId, messageId)
   end
 
 end
@@ -290,6 +232,7 @@ end
 -- Sends a redstone(ON) update message to all clients
 --
 function ServerClass:turnAllOn()
+  -- TODO turn all ON
   local result = true
   Log.debug(Strings.SEND_ON_TO_ALL)
 
@@ -300,6 +243,7 @@ end
 -- Sends a redstone(OFF) update message to all clients
 --
 function ServerClass:turnAllOff()
+  -- TODO turn all OFF
   local result = true
   Log.debug(Strings.SEND_OFF_TO_ALL)
 
@@ -310,7 +254,6 @@ end
 -- Handles all client events.
 --
 
--- TODO REGISTER HOSTNAME AND OPEN REDNET ON CLIENT AND SERVER
 function ServerClass:handleEvent()
   local result = true
   local code = CODE_UNKNOWN_EVENT

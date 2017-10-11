@@ -37,6 +37,7 @@ Config.printHelp (Log, code, CONFIG_FILE)
 
 if code == Config.CONFIG_OK then
   ClientHelper.printConfig(Log, client)
+  client:start()
   Log.info (Strings.LOOKING_UP_SERVER)
   if not client:waitForHandshake() then
     Log.error (Strings.COMMUNICATIONS_ERROR)
@@ -45,5 +46,6 @@ if code == Config.CONFIG_OK then
     ClientHelper.printMenu()
     clientLoop(client)
   end
+  client:finalize()
 end
 print (Strings.EXITING_PROGRAM)

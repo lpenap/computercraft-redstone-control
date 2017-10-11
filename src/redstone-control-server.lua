@@ -22,7 +22,7 @@ local function serverLoop (server)
     if code == Server.CODE_EXIT then
       exit = true
     end
-    Log.info ("Code: %d , result: %s", code, Util.booleanToString(result))
+    Log.debug ("Code: %d , result: %s", code, Util.booleanToString(result))
   end
 end
 
@@ -38,6 +38,8 @@ Config.printHelp (Log, code, CONFIG_FILE)
 if code == Config.CONFIG_OK then
   ServerHelper.printConfig(server)
   ServerHelper.printMenu()
+  server:start()
   serverLoop(server)
+  server:finalize()
 end
 print (Strings.EXITING_PROGRAM)

@@ -4,6 +4,7 @@ os.loadAPI("api/Config")
 os.loadAPI("api/Strings")
 os.loadAPI("api/Util")
 os.loadAPI("api/Log")
+os.loadAPI("api/Comm")
 
 --
 -- Global variables and constants
@@ -39,7 +40,7 @@ ClientClass = {
   _keepAliveTimer = nil,
   _serverId = UNKNOWN_SERVER_ID,
   _modemSide = nil,
-  
+
   name = Strings.GENERIC_CLIENT,
   keepAlive = CLIENT_KEEPALIVE,
   redstoneState = REDSTONE_STATE,
@@ -138,6 +139,7 @@ function ClientClass:waitForServerLookup()
     if Util.length(servers) > 0 then
       serverFound = true
       self._serverId = servers[1]
+      Log.trace(Strings.USING_SEVER, self._serverId)
     else
       Log.debug(Strings.SERVER_UNAVAILABLE, self._commInterval)
       os.sleep(self._commInterval)
@@ -157,7 +159,7 @@ function ClientClass:waitForModem()
       os.sleep(self._commInterval)
     end
   until side ~= nil
-  self._modemSide = side
+  return side
 end
 
 --
@@ -165,59 +167,53 @@ end
 --
 function ClientClass:sendClientData()
   local data = {
+    message_type = Strings.CLIENT_DATA,
     client_name = self.name,
     redstone = self.redstoneState,
     side = self.redstoneSide,
     keep_alive = self.keepAlive
   }
-  local messageSent = false
-  local retries = self._commRetries
-  while ((not messageSent) and (retries > 0)) do
-    messageSent = rednet.send(self._serverId, Util.createMessage(VERSION, data), self.serverSecret)
-    if messageSent then
-      Log.debug(String.MESSAGE_SENT)
-    else
-      Log.debug (Strings.ERROR_SENDING_MESSAGE)
-    end
-    os.sleep (self._commInterval)
-    retries = retries - 1
-  end
-  return messageSent
+  return Comm.sendData(VERSION, nil, data, self._serverId, self.serverSecret)
+end
+
+--
+-- Sends ACK to the server
+--
+function ClientClass:sendAck(messageId)
+  return Comm.sendData(VERSION, messageId, Comm.createAck(), self._serverId, self.serverSecret)
 end
 
 
 --
 -- Process and a message received from server
 --
-function ClientClass:processMessage(raw)
-  -- TODO process message in client
-  local version, message = Util.getDataFromMessage(raw)
-  log.trace(Strings.PROCESSING_MESSAGE_VERSION, tostring(version))
+function ClientClass:processMessage(data)
+  Log.trace(Strings.PROCESSING_MESSAGE)
 end
 
 --
 -- Sends client state and waits for server ACK
 --
-function ClientClass:sendAndWaitResponse()
-  local messageSent = self:sendClientData()
-
-  -- receiving
+function ClientClass:getResponseMessage(messageId)
   local messageReceived = false
-  local retries = self._commRetries
-  while ((not messageReceived) and (retries > 0)) do
-    local senderId, rawMessage, secret = rednet.receive(self.serverSecret)
-    if ((secret == self.serverSecret) and (senderId == self._serverId)) then
-      Log.debug(Strings.MESSAGE_RECEIVED)
-      Log.trace(rawMessage)
-      messageReceived = true
-      self:processMessage(rawMessage)
-    else
-      Log.debug(Strings.MESSAGE_RECEIVED_FROM_SENDER, tostring(senderId))
+  Log.trace (Strings.WAITING_FOR_MESSAGE_WITH_ID, messageId)
+  local senderId, rawMessage, secret = rednet.receive(self.serverSecret)
+  Log.trace(Strings.MESSAGE_RECEIVED)
+  if ((secret == self.serverSecret) and (senderId == self._serverId)) then
+    local serverVersion, msgId, data = Comm.getDataFromMessage(rawMessage)
+    Log.debug(Strings.MESSAGE_RECEIVED_FROM_SENDER, tostring(senderId), msgId)
+    Log.trace(rawMessage)
+    if VERSION ~= serverVersion then
+      Log.error (Strings.WRONG_PROTOCOL_VERSION_FROM_SERVER, senderId, VERSION, serverVersion)
     end
-    retries = retries - 1
+    if ((msgId == messageId) or (msgId == Strings.COMMAND)) then
+      self:processMessage(data)
+      messageReceived = true
+    else
+      Log.warn(Strings.UNWANTED_MESSAGE_RECEIVED, msgId)
+    end
   end
-
-  return messageSent and messageReceived
+  return messageReceived
 end
 
 --
@@ -230,13 +226,17 @@ end
 -- 4:   Clients waits ACK from the server
 --      (finite retries)
 --
-function ClientClass:communicateWithServer()
-  self:waitForModem()
-  rednet.open(self._modemSide)
+function ClientClass:sendClientDataAndGetResponse()
+  local side = self:waitForModem()
+  if self._modemSide ~= side then
+    self._modemSide = side
+    rednet.close()
+    rednet.open(self._modemSide)
+  end
   self:waitForServerLookup()
-  local result = self:sendAndWaitResponse()
-  rednet.close()
-  return result
+  local sendResult, messageId = self:sendClientData()
+  local receiveResult = self:getResponseMessage(messageId)
+  return (sendResult and receiveResult)
 end
 
 --
@@ -249,7 +249,8 @@ end
 --
 function ClientClass:waitForHandshake()
   Log.debug (Strings.HANDSHAKING)
-  while not self:communicateWithServer() do
+  while not self:sendClientDataAndGetResponse() do
+    Log.warn(Strings.COULDNT_HANDSHAKE)
     os.sleep(self._commInterval)
   end
 end
@@ -260,22 +261,45 @@ end
 --
 function ClientClass:sendKeepAlive()
   Log.debug(Strings.SENDING_KEEP_ALIVE)
-  return self:communicateWithServer()
+  return self:sendClientDataAndGetResponse()
 end
 
 --
 -- Handles event receiving from server
 --
 function ClientClass:handleRednetEvent(event)
-  -- TODO check protocol version from server
-  Log.debug(Strings.REDNET_PROTOCOL_MSG_RECEIVED)
-  if self._serverId == event[2] then
-    Log.trace(Strings.RECEIVED_MSG_FROM_SERVER)
-    self:processMessage(event[3])
-    -- TODO send ACK
+  local rawMessage = event[3]
+  local serverId = event[2]
+  local serverVersion, msgId, data = Comm.getDataFromMessage(rawMessage)
+  if VERSION ~= serverVersion then
+    Log.error (Strings.WRONG_PROTOCOL_VERSION_FROM_SERVER, serverId, VERSION, serverVersion)
   else
-    Log.trace(Strings.RECEIVED_FROM_UNKNOWN_SERVER, tostring(event[2]))
+    Log.debug(Strings.REDNET_PROTOCOL_MSG_RECEIVED)
+    if self._serverId == serverId then
+      Log.trace(Strings.RECEIVED_MSG_FROM_SERVER)
+      self:processMessage(data)
+      self:sendAck(msgId)
+    else
+      Log.trace(Strings.RECEIVED_FROM_UNKNOWN_SERVER, tostring(event[2]))
+    end
   end
+end
+
+--
+-- Opens communications channels
+--
+function ClientClass:start()
+  local side = self:waitForModem()
+  self._modemSide = side
+  rednet.close()
+  rednet.open(self._modemSide)
+end
+
+--
+-- Closes communications channels
+--
+function ClientClass:finalize()
+  rednet.close()
 end
 
 --
