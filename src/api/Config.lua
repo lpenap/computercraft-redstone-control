@@ -1,6 +1,7 @@
 -- Configuration API for both client and server
 
 os.loadAPI("api/Strings")
+os.loadAPI("api/Log")
 
 CONFIG_OK = 10
 CONFIG_NOT_FOUND = 11
@@ -41,20 +42,20 @@ function loadConfig (configFile)
   return errorCode, config
 end
 
-function printHelp (log, code, configFile)
+function printHelp (code, configFile)
   if code == CONFIG_NOT_FOUND then
-    log.warn(Strings.MSG_CONFIG_NOT_FOUND, configFile)
+    Log.warn(Strings.MSG_CONFIG_NOT_FOUND, configFile)
 
   elseif code == CONFIG_SYNTAX_ERROR then
-    log.warn(Strings.MSG_CONFIG_SYNTAX_ERROR, configFile)
+    Log.warn(Strings.MSG_CONFIG_SYNTAX_ERROR, configFile)
 
   elseif code == CONFIG_LOAD_ERROR then
-    log.warn(Strings.MSG_CONFIG_LOAD_ERROR)
+    Log.warn(Strings.MSG_CONFIG_LOAD_ERROR)
 
   elseif code == CONFIG_OK then
-    log.warn(Strings.MSG_CONFIGURATION_LOADED)
+    Log.warn(Strings.MSG_CONFIGURATION_LOADED)
 
   else
-    log.error (Strings.MSG_ERROR_LOADING_CONFIG)
+    Log.error (Strings.MSG_ERROR_LOADING_CONFIG)
   end
 end

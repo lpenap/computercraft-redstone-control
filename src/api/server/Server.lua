@@ -189,8 +189,8 @@ function ServerClass:sendRedstoneStateToClient(clientId, messageId)
     redstone = self.clients[clientId]:getState()
   }
   Log.trace(Strings.SENDING_MESSAGE_TO, clientId, messageId)
-  local messageSent,_ = Comm.sendData(VERSION, messageId, data, clientId, self.serverSecret)
-  return messageSent
+  local messageSent, createdMessageId = Comm.sendData(VERSION, messageId, data, clientId, self.serverSecret)
+  return messageSent, createdMessageId
 end
 
 --

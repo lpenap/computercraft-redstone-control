@@ -28,12 +28,14 @@ end
 
 -- Server Program
 Log.setLogLevel(LOG_LEVEL)
+Log.setLogger(Log.FILE_LOGGER)
+Log.start()
 ServerHelper.printHeader(Server.VERSION)
 Util.validateComputer()
 
 local server = Server.create()
 local code = server:loadConfig (CONFIG_FILE)
-Config.printHelp (Log, code, CONFIG_FILE)
+Config.printHelp (code, CONFIG_FILE)
 
 if code == Config.CONFIG_OK then
   ServerHelper.printConfig(server)
@@ -43,3 +45,4 @@ if code == Config.CONFIG_OK then
   server:finalize()
 end
 print (Strings.EXITING_PROGRAM)
+Log.finalize()

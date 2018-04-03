@@ -20,6 +20,8 @@ Client version is %d, received version %d from server
 You need to update the program on the client (or server)
 ]]
 
+SEND_RECEIVE_RESULTS = "Send result: %s, receive result: %s."
+
 NEVER = "Never"
 
 TIME_AGO = "%d%s ago"

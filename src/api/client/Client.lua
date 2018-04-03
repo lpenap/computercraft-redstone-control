@@ -18,6 +18,7 @@ VERSION = 1
 local UNKNOWN_SERVER_ID = -99
 local COMM_RETRIES = 10
 local COMM_INTERVAL = 5
+local REDNET_TIMEOUT = 5
 local CLIENT_KEEPALIVE = 60
 local REDSTONE_STATE = 1
 
@@ -37,6 +38,7 @@ end
 ClientClass = {
   _commInterval = COMM_INTERVAL,
   _commRetries = COMM_RETRIES,
+  _rednetTimeout = REDNET_TIMEOUT,
   _keepAliveTimer = nil,
   _serverId = UNKNOWN_SERVER_ID,
   _modemSide = nil,
@@ -173,14 +175,16 @@ function ClientClass:sendClientData()
     side = self.redstoneSide,
     keep_alive = self.keepAlive
   }
-  return Comm.sendData(VERSION, nil, data, self._serverId, self.serverSecret)
+  local success, messageId = Comm.sendData(VERSION, nil, data, self._serverId, self.serverSecret)
+  return success, messageId
 end
 
 --
 -- Sends ACK to the server
 --
 function ClientClass:sendAck(messageId)
-  return Comm.sendData(VERSION, messageId, Comm.createAck(), self._serverId, self.serverSecret)
+  local success,_ = Comm.sendData(VERSION, messageId, Comm.createAck(), self._serverId, self.serverSecret)
+  return success
 end
 
 
@@ -197,7 +201,7 @@ end
 function ClientClass:getResponseMessage(messageId)
   local messageReceived = false
   Log.trace (Strings.WAITING_FOR_MESSAGE_WITH_ID, messageId)
-  local senderId, rawMessage, secret = rednet.receive(self.serverSecret)
+  local senderId, rawMessage, secret = rednet.receive(self.serverSecret, self._rednetTimeout)
   Log.trace(Strings.MESSAGE_RECEIVED)
   if ((secret == self.serverSecret) and (senderId == self._serverId)) then
     local serverVersion, msgId, data = Comm.getDataFromMessage(rawMessage)
@@ -236,6 +240,7 @@ function ClientClass:sendClientDataAndGetResponse()
   self:waitForServerLookup()
   local sendResult, messageId = self:sendClientData()
   local receiveResult = self:getResponseMessage(messageId)
+  Log.trace(Strings.SEND_RECEIVE_RESULTS, tostring(sendResult), tostring(receiveResult))
   return (sendResult and receiveResult)
 end
 
@@ -253,6 +258,7 @@ function ClientClass:waitForHandshake()
     Log.warn(Strings.COULDNT_HANDSHAKE)
     os.sleep(self._commInterval)
   end
+  return true
 end
 
 --

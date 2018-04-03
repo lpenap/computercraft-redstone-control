@@ -32,12 +32,13 @@ end
 function sendData(version, messageId, data, receiverId, protocol)
   local createdMessageId = nil
   local message = ""
-  local messageSent = false
+  local messageSent = true
   message, createdMessageId = createMessage(version, messageId, data)
   Log.trace(Strings.SENDING_MESSAGE_TO, receiverId, createdMessageId)
   messageSent = rednet.send(receiverId, message, protocol)
+  Log.trace("rednet.send result: ".. tostring(messageSent))
   if messageSent then
-    Log.debug(String.MESSAGE_SENT)
+    Log.debug(Strings.MESSAGE_SENT)
   else
     Log.debug (Strings.ERROR_SENDING_MESSAGE)
   end

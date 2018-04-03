@@ -28,12 +28,13 @@ end
 
 -- Client Program
 Log.setLogLevel(LOG_LEVEL)
+Log.start()
 ClientHelper.printHeader(Client.VERSION)
 Util.validateComputer()
 
 local client = Client.create()
 local code = client:loadConfig (CONFIG_FILE)
-Config.printHelp (Log, code, CONFIG_FILE)
+Config.printHelp (code, CONFIG_FILE)
 
 if code == Config.CONFIG_OK then
   ClientHelper.printConfig(Log, client)
@@ -49,3 +50,4 @@ if code == Config.CONFIG_OK then
   client:finalize()
 end
 print (Strings.EXITING_PROGRAM)
+Log.finalize()
